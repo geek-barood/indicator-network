@@ -3,7 +3,6 @@
 #
 
 from gi.repository import Gtk, GLib
-import socket
 import os
 try:
        from gi.repository import AppIndicator3 as AppIndicator  
@@ -19,8 +18,8 @@ class IndicatorNetwork:
     icon_connected = icon_path + "icon-connected.svg"
     def __init__(self):
         # @param1: identifier of this indicator
-        # @param2: name of icon. this will be searched for in the standard them
-        # dirs
+        # @param2: name of icon. this will be searched for in the standard theme
+        # dirs or the given path
         # @param3: category of the indicator
         self.ind = AppIndicator.Indicator.new(
                             "indicator-network", 
@@ -51,17 +50,14 @@ class IndicatorNetwork:
         self.ind.set_menu(self.menu)
 
         # update every 2 seconds
-        GLib.timeout_add_seconds(2, self.handler_timeout)
+        GLib.timeout_add_seconds(3, self.handler_timeout)
 
     def is_connected(self):
         print_debug("trying to connect...")
-        try:
-            host = socket.gethostbyname(self.REMOTE_SERVER)
-            print_debug(host)
-            s = socket.create_connection((host, 80), 2)
+        resp = os.system("ping -c 1 -w 2 " + self.REMOTE_SERVER +
+                " > /dev/null 2>&1")
+        if resp == 0:
             return True
-        except:
-            pass
         return False
 
     def handler_menu_exit(self, evt):
